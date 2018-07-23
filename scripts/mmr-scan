@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+
+from miaomiaopy.cli.scanner import scan
+
+if __name__ == '__main__':
+    scan()

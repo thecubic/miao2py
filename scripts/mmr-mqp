@@ -1,24 +1,6 @@
 #!/usr/bin/env python3
 
-import logging
-import sys
+from miaomiaopy.cli.publisher import publish
 
-from miaomiaopy.mqpub import MiaoMiaoMQPublisher
-from bluepy.btle import BTLEException
-
-logging.basicConfig(level=logging.DEBUG)
-
-log = logging.getLogger(__name__)
-
-
-while True:
-    try:
-        with MiaoMiaoMQPublisher(
-                btaddr=sys.argv[1],
-                mqurl=sys.argv[2],
-                mqtopic=sys.argv[3],
-        ) as miaomiao:
-            miaomiao.start_notify()
-            miaomiao.notify_forever()
-    except BTLEException as e:
-        log.exception("whoops")
+if __name__ == '__main__':
+    publish()

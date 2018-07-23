@@ -7,6 +7,7 @@ from hbmqtt.client import MQTTClient, ConnectException
 
 log = logging.getLogger(__name__)
 
+
 class MiaoMiaoMQSubscriber:
     def __init__(self, mqurl, mqtopic, *, aioloop=None):
         super().__init__(btaddr)

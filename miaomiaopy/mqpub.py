@@ -9,6 +9,7 @@ from .device import MiaoMiaoDevice
 
 log = logging.getLogger(__name__)
 
+
 class MiaoMiaoMQPublisher(MiaoMiaoDevice):
     def __init__(self, btaddr, mqurl, mqtopic, *, aioloop=None):
         super().__init__(btaddr)
@@ -29,20 +30,14 @@ class MiaoMiaoMQPublisher(MiaoMiaoDevice):
         """connect to MQTT when we connect to the actual device"""
         super().handleConnect()
         self._ensure_aioloop()
-        self.aioloop.run_until_complete(
-            self.mqclient.connect(self.mqurl)
-        )
+        self.aioloop.run_until_complete(self.mqclient.connect(self.mqurl))
 
     def handleDisconnect(self):
         """disconnect from MQTT when we disconnect from the actual device"""
         super().handleDisconnect()
         self._ensure_aioloop()
-        self.aioloop.run_until_complete(
-            self.mqclient.disconnect()
-        )
+        self.aioloop.run_until_complete(self.mqclient.disconnect())
 
     def handlePacket(self, data):
         self._ensure_aioloop()
-        self.aioloop.run_until_complete(
-            self.mqclient.publish(self.mqtopic, data)
-        )
+        self.aioloop.run_until_complete(self.mqclient.publish(self.mqtopic, data))

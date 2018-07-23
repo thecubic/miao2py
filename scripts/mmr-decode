@@ -1,1 +1,6 @@
 #!/usr/bin/env python3
+
+from miaomiaopy.cli.decoder import decode
+
+if __name__ == '__main__':
+    decode()
