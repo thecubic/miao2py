@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="miaomiaopy",
-    version="0.0.1",
+    version="0.0.2",
     description="interact with MiaoMiao devices in Python3",
     url="https://github.com/thecubic/miaomiaopy",
     author="Dave Carlson",
@@ -27,9 +27,5 @@ setup(
     ],
     packages=find_packages(),
     install_requires=["bluepy", "hbmqtt", "click"],
-    entry_points={
-        'console_scripts': [
-            'mmr-scanner = miaomiaopy.cli.scanner:scan',
-        ],
-    },
+    entry_points={"console_scripts": ["mmr-scanner = miaomiaopy.cli.scanner:scan"]},
 )

@@ -28,5 +28,6 @@ def publish(btaddr, mqurl, mqtopic, retry):
             else:
                 log.exception("connection failure (retrying)")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     publish()

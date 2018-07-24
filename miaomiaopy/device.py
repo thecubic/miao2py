@@ -5,11 +5,13 @@ import logging
 
 log = logging.getLogger(__name__)
 
+
 class MiaoMiaoScanner(btle.DefaultDelegate):
     def __init__(self, sensitivity=False):
         super().__init__()
         self.miaomiaos = {}
         self.sensitivity = sensitivity
+
     def handleDiscovery(self, scanentry, is_new, is_new_data):
         if self.sensitivity and scanentry.rssi < self.sensitivity:
             return
@@ -21,11 +23,11 @@ class MiaoMiaoScanner(btle.DefaultDelegate):
         else:
             ...
             self.miaomiaos[scanentry.addr] = scanentry
-        print(f"{scanentry.addr} {scanentry.rssi} dBm")
+        print("{} {} dBm".format(scanentry.addr, scanentry.rssi))
 
     @staticmethod
     def is_miaomiao(scanentry):
-        return scanentry.getValueText(9) == 'miaomiao'
+        return scanentry.getValueText(9) == "miaomiao"
 
 
 class MiaoMiaoDevice(btle.DefaultDelegate):
