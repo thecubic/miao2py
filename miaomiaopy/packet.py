@@ -280,7 +280,7 @@ class crc16:
     @classmethod
     def at(cls, block):
         """crc+data block; compute real, return both"""
-        ecrc = struct.unpack(">H", block[0:2])[0]
+        ecrc = struct.unpack("<H", block[0:2])[0]
         crc = cls.of(block[2:])
         return ecrc, crc
 
@@ -292,28 +292,31 @@ class crc16:
 
 
 class LibrePacket:
+    """Represents a data packet directly as read from a Freestyle Libre sensor"""
     @classmethod
     def from_bytes(cls, data, timestamp=None):
+        # NOTE: Libre sensors are little-endian, regardless of the endianness
+        # of the encapsulating device
         packet = cls()
         packet.data = data
 
         # L0-1: CRC of 2-23 [TODO: does not work]
         ecrc1, crc1 = crc16.at(packet.data[0:24])
-        log.info("crc1: %x %x %s", ecrc1, crc1, ecrc1 == crc1)
+        log.debug("crc1: %x %x %s", ecrc1, crc1, ecrc1 == crc1)
 
         # Second arena: Sensor data
         # L24-25: CRC of 26-319  [TODO: does not work]
         ecrc2, crc2 = crc16.at(packet.data[24:320])
-        log.info("crc2: %x %x %s", ecrc2, crc2, ecrc2 == crc2)
+        log.debug("crc2: %x %x %s", ecrc2, crc2, ecrc2 == crc2)
 
         packet.index_trend = packet.data[26]
         packet.index_history = packet.data[27]
 
         # L320-321: CRC16 of 322-343  [TODO: does not work]
         ecrc3, crc3 = crc16.at(packet.data[320:344])
-        log.info("crc3: %x %x %s", ecrc3, crc3, ecrc3 == crc3)
+        log.debug("crc3: %x %x %s", ecrc3, crc3, ecrc3 == crc3)
 
-        packet.minutes = struct.unpack(">h", data[335:337])[0]
+        packet.minutes = struct.unpack("<h", data[335:337])[0]
         packet.sensor_start = datetime.datetime.now() - datetime.timedelta(
             minutes=packet.minutes
         )
@@ -328,12 +331,11 @@ class LibrePacket:
             low, high = bias + ird * 6, bias + (ird + 1) * 6
 
             entrydata = data[low:high]
-            entrybe = struct.unpack(">HHH", entrydata)
             entryle = struct.unpack("<HHH", entrydata)
-            entry = [dtry / 8.5 for dtry in entrybe + entryle]
+            entry = [dtry / 8.5 for dtry in entryle]
             packet.history.append(entry)
             if imem == 0:
-                print("H%d@%d %s" % (imem, ird, entry))
+                log.debug("H%d@%d %s" % (imem, ird, entry))
 
         packet.trends = []
         ntrends = 16
@@ -342,12 +344,16 @@ class LibrePacket:
             bias = 46
             low, high = bias + ird * 6, bias + (ird + 1) * 6
             entrydata = data[low:high]
-            entrybe = struct.unpack(">HHH", entrydata)
             entryle = struct.unpack("<HHH", entrydata)
-            entry = [dtry / 8.5 for dtry in entrybe + entryle]
+            entry = [dtry / 8.5 for dtry in entryle]
             packet.trends.append(entry)
             if imem == 0:
-                print("T%d@%d %s" % (imem, ird, entry))
+                log.debug("T%d@%d %s" % (imem, ird, entry))
+
+        return packet
+
+    def __repr__(self):
+        return "<%s ih=%d it=%d minutes=%d start='%s'>" % (type(self).__name__, self.index_history, self.index_trend, self.minutes, self.sensor_start)
 
 
 class MiaoMiaoPacket:
@@ -359,25 +365,25 @@ class MiaoMiaoPacket:
 
     @classmethod
     def from_bytes(cls, data, timestamp=None):
+        # NOTE: the miaomiao is a big-endian device, but it hosts
+        # data from the sensor, which is little-endian
         packet = cls()
-
         # 18-1 byte envelope packet surrounding a Libre packet
         packet.rawpacket = data
-
         # E0: a start packet
         if packet.rawpacket[0] != cls.start_pkt:
             raise ValueError("envelope packet does not contain start byte")
-
         # E1-2: the length of this here packet
         packet.length = struct.unpack(">h", packet.rawpacket[1:3])[0]
         if len(packet.rawpacket) != packet.length:
             raise ValueError(
                 "envelope packet not of embedded length: {}".format(packet.length)
             )
-
         # E3-12: the Libre serial number maybe?
-        log.info("E3-12: %s", hexlify(packet.rawpacket[3:13]))
-
+        # determine sensor serial number
+        # SN 0M00031VE4H
+        # 0m0003A74MR
+        log.debug("E3-12: %s", hexlify(packet.rawpacket[3:13]))
         # E13: the battery level percentage
         packet.battery = packet.rawpacket[13]
         # E14-15: firmware revision
@@ -386,27 +392,11 @@ class MiaoMiaoPacket:
         packet.hw_version = struct.unpack(">h", packet.rawpacket[16:18])[0]
         # E18-361: the buffered Libre packet (L)
         packet.payload = packet.rawpacket[18:363]
+        packet.librepacket = LibrePacket.from_bytes(packet.payload, timestamp)
         # E362: an end packet character )
         if packet.rawpacket[packet.length - 1] != cls.end_pkt:
             raise ValueError("envelope packet does not contain end byte")
-
-        packet.librepacket = LibrePacket.from_bytes(packet.payload, timestamp)
-
-        # determine sensor serial number
-        # SN 0M00031VE4H
-        # 0m0003A74MR
-
-        print(
-            "len=%d bat=%d fw=%x hw=%x it=%d ih=%s min=%d st=%s"
-            % (
-                packet.length,
-                packet.battery,
-                packet.fw_version,
-                packet.hw_version,
-                packet.librepacket.index_trend,
-                packet.librepacket.index_history,
-                packet.librepacket.minutes,
-                packet.librepacket.sensor_start,
-            )
-        )
         return packet
+
+    def __repr__(self):
+        return "<%s battery=%d fw=%x hw=%x librepacket=%s>" % (type(self).__name__, self.battery, self.fw_version, self.hw_version, self.librepacket)

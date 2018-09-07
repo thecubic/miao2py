@@ -91,10 +91,11 @@ class MiaoMiaoDevice(btle.DefaultDelegate):
                 found_devices.append(cls(device.addr))
         return found_devices
 
-    def __init__(self, btaddr):
+    def __init__(self, btaddr, *, btle_excmask=True):
         super().__init__()
         self.btaddr = btaddr
         self.pkt_acc = []
+        self.btle_excmask = btle_excmask
         self.state = self.STATE_DISCONNECTED
 
     def __repr__(self):
@@ -122,11 +123,14 @@ class MiaoMiaoDevice(btle.DefaultDelegate):
         self._state_transition(self.STATE_DISCONNECTED)
 
     def __enter__(self):
-        self.connect()
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self, exc_type, exc_value, traceback):
         self.disconnect()
+        if exc_type is btle.BTLEException:
+            log.exception("Bluetooth exception encountered")
+            return self.btle_excmask
+
 
     def sensor_allow(self):
         log.debug("-> allow sensor")

@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="miaomiaopy",
-    version="0.0.2",
+    version="0.0.6",
     description="interact with MiaoMiao devices in Python3",
     url="https://github.com/thecubic/miaomiaopy",
     author="Dave Carlson",

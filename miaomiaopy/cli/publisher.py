@@ -14,20 +14,14 @@ log = logging.getLogger(__name__)
 @click.argument("btaddr")
 @click.argument("mqurl")
 @click.argument("mqtopic")
-@click.option("--retry", is_flag=True, help="Retry on failures")
-def publish(btaddr, mqurl, mqtopic, retry):
+@click.option("--btfatal/--no-btfatal", default=False, help="make bluetooth problems fatal")
+def publish(btaddr, mqurl, mqtopic, btfatal):
     while True:
-        try:
-            with MiaoMiaoMQPublisher(btaddr, mqurl, mqtopic) as miaomiao:
-                miaomiao.start_notify()
-                miaomiao.notify_forever()
-            log.debug("new iteration")
-        except BTLEException as e:
-            if not retry:
-                raise click.ClickException("connection failure") from e
-            else:
-                log.exception("connection failure (retrying)")
-
+        with MiaoMiaoMQPublisher(btaddr, mqurl, mqtopic, btle_excmask=btfatal) as miaomiao:
+            miaomiao.connect()
+            miaomiao.start_notify()
+            miaomiao.notify_forever()
+        log.debug("new iteration")
 
 if __name__ == "__main__":
     publish()
