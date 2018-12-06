@@ -3,10 +3,10 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="miaomiaopy",
+    name="miao2py",
     version="0.0.6",
     description="interact with MiaoMiao devices in Python3",
-    url="https://github.com/thecubic/miaomiaopy",
+    url="https://github.com/thecubic/miao2py",
     author="Dave Carlson",
     author_email="thecubic@thecubic.net",
     license="Apache 2.0",
@@ -20,12 +20,11 @@ setup(
         "Programming Language :: Python :: 3.6",
     ],
     scripts=[
-        "scripts/mmr-decode",
-        "scripts/mmr-mqp",
-        "scripts/mmr-mqs",
-        "scripts/mmr-scan",
+        "scripts/m2p-decode",
+        "scripts/m2p-mqp",
+        "scripts/m2p-mqs",
+        "scripts/m2p-scan",
     ],
     packages=find_packages(),
     install_requires=["bluepy", "hbmqtt", "click"],
-    entry_points={"console_scripts": ["mmr-scanner = miaomiaopy.cli.scanner:scan"]},
 )

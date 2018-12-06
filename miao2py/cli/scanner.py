@@ -2,7 +2,7 @@
 
 import click
 
-from miaomiaopy.device import MiaoMiaoScanner
+from miao2py.device import MiaoMiaoScanner
 from bluepy import btle
 
 

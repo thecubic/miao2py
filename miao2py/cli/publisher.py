@@ -3,7 +3,7 @@
 import click
 import logging
 
-from miaomiaopy.mqpub import MiaoMiaoMQPublisher
+from miao2py.mqpub import MiaoMiaoMQPublisher
 from bluepy.btle import BTLEException
 
 logging.basicConfig(level=logging.DEBUG)

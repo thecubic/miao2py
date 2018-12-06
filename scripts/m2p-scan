@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+
+from miao2py.cli.scanner import scan
+
+if __name__ == '__main__':
+    scan()

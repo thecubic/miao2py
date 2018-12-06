@@ -9,8 +9,8 @@ logging.basicConfig(level=logging.NOTSET)
 
 log = logging.getLogger(__name__)
 
-from miaomiaopy.device import MiaoMiaoDevice
-from miaomiaopy.packet import MiaoMiaoPacket
+from miao2py.device import MiaoMiaoDevice
+from miao2py.packet import MiaoMiaoPacket
 
 
 class MiaoMiaoDecoder(MiaoMiaoDevice):

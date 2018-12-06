@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from miaomiaopy.cli.subscriber import subscribe
+from miao2py.cli.subscriber import subscribe
 
 if __name__ == '__main__':
     subscribe()

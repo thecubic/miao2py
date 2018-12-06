@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from miaomiaopy.cli.publisher import publish
+from miao2py.cli.publisher import publish
 
 if __name__ == '__main__':
     publish()
